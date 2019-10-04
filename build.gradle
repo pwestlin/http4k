@@ -14,6 +14,10 @@ dependencies {
 
     compile group: 'org.http4k', name: 'http4k-core', version: '3.187.0'
     compile group: "org.http4k", name: "http4k-format-jackson", version: "3.187.0"
+
+    testCompile("org.junit.jupiter:junit-jupiter:5.5.2")
+    testCompile group: 'org.assertj', name: 'assertj-core', version: '3.13.2'
+    testCompile group: 'io.mockk', name: 'mockk', version: '1.9.3'
 }
 
 compileKotlin {
