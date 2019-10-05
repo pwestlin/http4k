@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test
 internal class CarRepositoryTest {
 
     private val cars = listOf(
-        Car("Porsche", "997", 2001),
-        Car("Ferrari", "LaFerrari", 2011),
-        Car("Volvo", "142", 1972)
+        Car("AKU671", "Porsche", "997", 2001),
+        Car("KIB946", "Ferrari", "LaFerrari", 2011),
+        Car("NMO996", "Volvo", "142", 1972)
     )
 
     private lateinit var repository: CarRepository
@@ -27,7 +27,7 @@ internal class CarRepositoryTest {
     
     @Test
     fun `add a car`() {
-        val car = Car("Honda", "NSX", 2003)
+        val car = Car("HUR710","Honda", "NSX", 2003)
         repository.addCar(car)
 
         assertThat(repository.all()).contains(car)
@@ -35,10 +35,21 @@ internal class CarRepositoryTest {
 
     @Test
     fun `add a car that already exists should throw CarAlreadyExistException`() {
-        val car = Car("Honda", "NSX", 2003)
+        val car = Car("HUR710","Honda", "NSX", 2003)
         repository.addCar(car)
         assertThatThrownBy { repository.addCar(car) }
             .isInstanceOf(CarAlreadyExistException::class.java)
             .hasMessage("Car $car already exists")
+    }
+
+    @Test
+    fun `get by regNo`() {
+        val car = cars.last()
+        assertThat(repository.getByRegNo(car.regNo)).isEqualTo(car)
+    }
+    
+    @Test
+    fun `get by regNo that does not exist`() {
+        assertThat(repository.getByRegNo("does not exist")).isNull()
     }
 }

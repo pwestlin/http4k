@@ -1,5 +1,9 @@
+import static org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+import static org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.50'
+    id 'idea'
 }
 
 group 'org.example'
@@ -12,12 +16,20 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    compile group: 'org.http4k', name: 'http4k-core', version: '3.187.0'
-    compile group: "org.http4k", name: "http4k-format-jackson", version: "3.187.0"
+    def http4kVersion = '3.188.0'
+    compile group: 'org.http4k', name: 'http4k-core', version: http4kVersion
+    compile group: "org.http4k", name: "http4k-format-jackson", version: http4kVersion
+
+/*
+    testCompile group: 'org.http4k', name: 'http4k-testing-approval', version: http4kVersion
+    testCompile group: 'org.http4k', name: 'http4k-testing-hamkrest', version: http4kVersion
+*/
+
 
     testCompile("org.junit.jupiter:junit-jupiter:5.5.2")
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.13.2'
     testCompile group: 'io.mockk', name: 'mockk', version: '1.9.3'
+
 }
 
 compileKotlin {
@@ -25,4 +37,37 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+test {
+    include '**/*Test.class'
+
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter'
+    }
+}
+
+// Pretty print test outcome
+tasks.withType(Test) {
+    systemProperties = System.properties
+
+    testLogging {
+        events FAILED, SKIPPED
+
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "${desc.name} results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
