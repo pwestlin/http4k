@@ -20,10 +20,7 @@ dependencies {
     compile group: 'org.http4k', name: 'http4k-core', version: http4kVersion
     compile group: "org.http4k", name: "http4k-format-jackson", version: http4kVersion
 
-/*
     testCompile group: 'org.http4k', name: 'http4k-testing-approval', version: http4kVersion
-    testCompile group: 'org.http4k', name: 'http4k-testing-hamkrest', version: http4kVersion
-*/
 
 
     testCompile("org.junit.jupiter:junit-jupiter:5.5.2")

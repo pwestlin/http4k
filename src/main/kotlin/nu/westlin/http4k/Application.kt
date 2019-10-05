@@ -1,5 +1,7 @@
 package nu.westlin.http4k
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
@@ -69,6 +71,8 @@ class CarHandlerProvider(private val repository: CarRepository) {
     }
 }
 
+// TODO petves: Should only exist for tests?
+val objectMapper = ObjectMapper().registerKotlinModule()
 
 val pingPongHandler: HttpHandler = { Response(OK).body("Pong!") }
 

@@ -1,0 +1,20 @@
+[
+  {
+    "regNo": "AKU671",
+    "brand": "Porsche",
+    "model": "997",
+    "year": 2001
+  },
+  {
+    "regNo": "KIB946",
+    "brand": "Ferrari",
+    "model": "LaFerrari",
+    "year": 2011
+  },
+  {
+    "regNo": "NMO996",
+    "brand": "Volvo",
+    "model": "142",
+    "year": 1972
+  }
+]

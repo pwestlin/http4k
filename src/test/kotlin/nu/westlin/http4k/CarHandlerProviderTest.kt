@@ -15,7 +15,6 @@ import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.UriTemplate
 import org.http4k.core.with
-import org.http4k.routing.RoutedRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -39,8 +38,6 @@ internal class CarHandlerProviderTest {
         val handler = provider.allCarsHandler()
         val response = handler(Request(GET, "/cars"))
 
-        // TODO petves: Extension function or similar on assertThat that can do like
-        // assertThat(response).hasStatus(Status.OK)
         assertThat(response.status).isEqualTo(OK)
         assertThat(carListLens.extract(response)).containsExactlyInAnyOrderElementsOf(cars)
     }
@@ -78,7 +75,12 @@ internal class CarHandlerProviderTest {
         val car = cars.last()
         every { repository.getByRegNo(car.regNo) }.returns(car)
 
-        val response = provider.getCarByRegNoHandler()(Request(GET, UriTemplate.from("cars/regNo/{regNo}")).with(regNoLens of car.regNo))
+        val response = provider.getCarByRegNoHandler()(
+            Request(
+                GET,
+                UriTemplate.from("cars/regNo/{regNo}")
+            ).with(regNoLens of car.regNo)
+        )
         assertThat(response.status).isEqualTo(OK)
         assertThat(carLens.extract(response)).isEqualTo(car)
     }
@@ -88,7 +90,12 @@ internal class CarHandlerProviderTest {
         val regNo = "does not exist"
         every { repository.getByRegNo(regNo) }.returns(null)
 
-        val response = provider.getCarByRegNoHandler()(Request(GET, UriTemplate.from("cars/regNo/{regNo}")).with(regNoLens of regNo))
+        val response = provider.getCarByRegNoHandler()(
+            Request(
+                GET,
+                UriTemplate.from("cars/regNo/{regNo}")
+            ).with(regNoLens of regNo)
+        )
         assertThat(response.status).isEqualTo(NOT_FOUND)
         assertThat(response.bodyString()).isEmpty()
     }
