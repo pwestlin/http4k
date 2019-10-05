@@ -8,6 +8,7 @@ import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
+import org.http4k.filter.ServerFilters
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.Path
 import org.http4k.lens.string
@@ -95,11 +96,13 @@ val carHandlerProvider = CarHandlerProvider(
     CarRepository(initialCarList)
 )
 
+private val securityFilter: Filter = ServerFilters.BasicAuth("realm", "admin", "password")
+
 val routing: RoutingHttpHandler = routes(
     "/ping" bind GET to pingPongHandler,
     "/marco" bind GET to marcoPoloHandler,
     "/cars" bind GET to carHandlerProvider.allCarsHandler(),
-    "/cars" bind POST to carHandlerProvider.putCarHandler(),
+    ("/cars" bind POST to carHandlerProvider.putCarHandler()).withFilter(securityFilter),
     "/cars/regNo/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler()
 )
 
@@ -112,6 +115,7 @@ val requestTimeLogger: Filter = Filter { next: HttpHandler ->
         response
     }
 }
+
 
 val server = requestTimeLogger
     .then(routing)

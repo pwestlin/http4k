@@ -4,15 +4,13 @@ import nu.westlin.http4k.CarHandlerProvider.Companion.carLens
 import nu.westlin.http4k.CarHandlerProvider.Companion.carListLens
 import org.assertj.core.api.Assertions.assertThat
 import org.http4k.client.JavaHttpClient
-import org.http4k.core.HttpHandler
+import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Request
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
-import org.http4k.core.UriTemplate
-import org.http4k.core.with
+import org.http4k.filter.ClientFilters
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -22,6 +20,9 @@ import org.junit.jupiter.api.Test
 internal class ApplicationIntegrationTest {
 
     private val client: HttpHandler = JavaHttpClient()
+
+    private val securityFilter: Filter = ClientFilters.BasicAuth("admin", "password")
+
 
     private val baseUrl = "http://localhost:8080"
 
@@ -51,8 +52,7 @@ internal class ApplicationIntegrationTest {
 
     @Test
     fun `get car by registration number that does not exist`() {
-        val car = initialCarList.first()
-        client(Request(GET, "$baseUrl/cars/${car.regNo}")).let { response ->
+        client(Request(GET, "$baseUrl/cars/regNo/doesNotExist")).let { response ->
             assertThat(response.status).isEqualTo(NOT_FOUND)
             assertThat(response.bodyString()).isEmpty()
         }
@@ -72,7 +72,7 @@ internal class ApplicationIntegrationTest {
     @Test
     fun `put a car`() {
         val car = Car("FUK721", "Saab", "99", 1981)
-        val response = client(Request(POST, "$baseUrl/cars").with(CarHandlerProvider.carLens of car))
+        val response = securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))
 
         assertThat(response.status).isEqualTo(OK)
     }
@@ -81,10 +81,10 @@ internal class ApplicationIntegrationTest {
     fun `put a car that already exists`() {
         val car = Car("OLA091", "Saab", "99", 1981)
 
-        with(client(Request(POST, "$baseUrl/cars").with(CarHandlerProvider.carLens of car))) {
+        with(securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))) {
             assertThat(status).isEqualTo(OK)
         }
-        with(client(Request(POST, "$baseUrl/cars").with(CarHandlerProvider.carLens of car))) {
+        with(securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))) {
             assertThat(status).isEqualTo(BAD_REQUEST)
         }
     }
