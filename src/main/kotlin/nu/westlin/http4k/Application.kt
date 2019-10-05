@@ -6,6 +6,7 @@ import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.filter.ServerFilters
@@ -49,10 +50,11 @@ class CarHandlerProvider(private val repository: CarRepository) {
 
     fun allCarsHandler(): HttpHandler = { Response(OK).with(carListLens of repository.all()) }
 
-    fun putCarHandler(): HttpHandler = securityFilter.then { request: Request ->
+    fun postCarHandler(): HttpHandler = securityFilter.then { request: Request ->
         try {
+            // TODO petves: Have repository.addCar return Kotlin.Result?
             repository.addCar(carLens.extract(request))
-            Response(OK)
+            Response(CREATED)
         } catch (e: CarAlreadyExistException) {
             Response(BAD_REQUEST).body(e.localizedMessage)
         }
@@ -101,7 +103,7 @@ val routing: RoutingHttpHandler = routes(
     "/ping" bind GET to pingPongHandler,
     "/marco" bind GET to marcoPoloHandler,
     "/cars" bind GET to carHandlerProvider.allCarsHandler(),
-    "/cars" bind POST to carHandlerProvider.putCarHandler(),
+    "/cars" bind POST to carHandlerProvider.postCarHandler(),
     "/cars/regNo/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler()
 )
 

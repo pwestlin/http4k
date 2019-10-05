@@ -11,6 +11,7 @@ import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.UNAUTHORIZED
@@ -44,25 +45,25 @@ internal class CarHandlerProviderTest {
     }
 
     @Test
-    fun `put a car`() {
+    fun `post a car`() {
         val car = Car("LEN779", "Saab", "99", 1981)
         every { repository.addCar(car) }.returns(Unit)
 
-        val handler = provider.putCarHandler()
+        val handler = provider.postCarHandler()
         val response = ClientFilters.BasicAuth("admin", "password").then(handler)(Request(POST, "/cars").with(carLens of car))
 
-        assertThat(response.status).isEqualTo(OK)
+        assertThat(response.status).isEqualTo(CREATED)
         assertThat(response.bodyString()).isEmpty()
 
         verify { repository.addCar(car) }
     }
 
     @Test
-    fun `put a car that already exist`() {
+    fun `post a car that already exist`() {
         val car = Car("NAO124", "Saab", "99", 1981)
         every { repository.addCar(car) }.throws(CarAlreadyExistException(car))
 
-        val handler = provider.putCarHandler()
+        val handler = provider.postCarHandler()
         val response = ClientFilters.BasicAuth("admin", "password").then(handler)(Request(POST, "/cars").with(carLens of car))
 
         assertThat(response.status).isEqualTo(BAD_REQUEST)
