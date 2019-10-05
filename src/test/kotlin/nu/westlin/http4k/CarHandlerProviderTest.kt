@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
@@ -66,7 +66,7 @@ internal class CarHandlerProviderTest {
         val handler = provider.postCarHandler()
         val response = ClientFilters.BasicAuth("admin", "password").then(handler)(Request(POST, "/cars").with(carLens of car))
 
-        assertThat(response.status).isEqualTo(BAD_REQUEST)
+        assertThat(response.status).isEqualTo(CONFLICT)
         assertThat(response.bodyString()).isEqualTo("Car $car already exists")
 
         verify { repository.addCar(car) }

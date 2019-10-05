@@ -7,7 +7,7 @@ import org.http4k.client.JavaHttpClient
 import org.http4k.core.*
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
-import org.http4k.core.Status.Companion.BAD_REQUEST
+import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
@@ -86,7 +86,7 @@ internal class ApplicationIntegrationTest {
             assertThat(status).isEqualTo(CREATED)
         }
         with(securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))) {
-            assertThat(status).isEqualTo(BAD_REQUEST)
+            assertThat(status).isEqualTo(CONFLICT)
         }
     }
 }
