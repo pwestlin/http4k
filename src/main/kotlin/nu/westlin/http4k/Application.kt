@@ -18,7 +18,6 @@ import org.http4k.routing.path
 import org.http4k.routing.routes
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
-import java.time.Instant
 
 // Inspiration: https://kotlinexpertise.com/kotlin-http4k/ and https://www.http4k.org/
 
@@ -50,7 +49,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
 
     fun allCarsHandler(): HttpHandler = { Response(OK).with(carListLens of repository.all()) }
 
-    fun putCarHandler(): HttpHandler = { request: Request ->
+    fun putCarHandler(): HttpHandler = securityFilter.then { request: Request ->
         try {
             repository.addCar(carLens.extract(request))
             Response(OK)
@@ -102,7 +101,7 @@ val routing: RoutingHttpHandler = routes(
     "/ping" bind GET to pingPongHandler,
     "/marco" bind GET to marcoPoloHandler,
     "/cars" bind GET to carHandlerProvider.allCarsHandler(),
-    ("/cars" bind POST to carHandlerProvider.putCarHandler()).withFilter(securityFilter),
+    "/cars" bind POST to carHandlerProvider.putCarHandler(),
     "/cars/regNo/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler()
 )
 
@@ -127,6 +126,3 @@ fun main() {
     log { "Server started on port ${server.start().port()}" }
 }
 
-fun log(message: () -> String) {
-    println("${Instant.now()}\t ${message()}")
-}
