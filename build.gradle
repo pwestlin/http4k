@@ -68,3 +68,16 @@ idea {
         downloadSources = true
     }
 }
+
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict", "-Xsanitize-parentheses", "-Xallow-result-return-type"]
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict", "-Xsanitize-parentheses", "-Xallow-result-return-type"]
+        jvmTarget = "1.8"
+    }
+}
