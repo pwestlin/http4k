@@ -8,6 +8,7 @@ import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.filter.ServerFilters
+import org.http4k.filter.ServerFilters.CatchLensFailure
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.Path
 import org.http4k.lens.string
@@ -136,6 +137,7 @@ val requestTimeLogger: Filter = Filter { next: HttpHandler ->
 
 
 val server = requestTimeLogger
+    .then(CatchLensFailure)
     .then(routing)
     .asServer(SunHttp(8080))
 

@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.http4k.client.JavaHttpClient
 import org.http4k.core.*
 import org.http4k.core.Method.*
+import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
@@ -69,14 +70,6 @@ internal class ApplicationIntegrationTest {
         }
     }
 
-    private fun postCar(car: Car): Car {
-        val response = securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))
-
-        assertThat(response.status).isEqualTo(CREATED)
-
-        return car
-    }
-
     @Test
     fun `post a car`() {
         val car = Car.random()
@@ -94,6 +87,13 @@ internal class ApplicationIntegrationTest {
         }
         with(securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))) {
             assertThat(status).isEqualTo(CONFLICT)
+        }
+    }
+
+    @Test
+    fun `post a car with bad json`() {
+        with(securityFilter.then(client)(Request(POST, "$baseUrl/cars").body("bad json"))) {
+            assertThat(status).isEqualTo(BAD_REQUEST)
         }
     }
 
@@ -132,5 +132,13 @@ internal class ApplicationIntegrationTest {
         ) {
             assertThat(status).isEqualTo(NOT_FOUND)
         }
+    }
+
+    private fun postCar(car: Car): Car {
+        val response = securityFilter.then(client)(Request(POST, "$baseUrl/cars").with(carLens of car))
+
+        assertThat(response.status).isEqualTo(CREATED)
+
+        return car
     }
 }
