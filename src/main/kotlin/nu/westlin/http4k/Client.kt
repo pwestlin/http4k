@@ -4,7 +4,7 @@ package nu.westlin.http4k
 
 import nu.westlin.http4k.CarHandlerProvider.Companion.carLens
 import nu.westlin.http4k.CarHandlerProvider.Companion.carListLens
-import org.http4k.client.JavaHttpClient
+import org.http4k.client.OkHttp
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
@@ -14,17 +14,17 @@ import org.http4k.core.with
 import org.http4k.filter.ClientFilters
 
 fun main() {
-    val client: HttpHandler = JavaHttpClient()
+    val client: HttpHandler = OkHttp()
 
-    //ping(client)
-    //listAllCars(client)
+    ping(client)
+    listAllCars(client)
     addNewCar(client)
-    //getCarByRegNo(client)
+    getCarByRegNo(client)
 }
 
 fun getCarByRegNo(client: HttpHandler) {
     val car = Car("AKU671", "Porsche", "997", 2001)
-    val request = Request(GET, "http://localhost:8080/cars/regNo/${car.regNo}")
+    val request = Request(GET, "http://localhost:8080/cars/${car.regNo}")
     val response = client(request)
     log { "response = $response" }
     log { "carListLens.extract(response) = ${carLens.extract(response)}" }

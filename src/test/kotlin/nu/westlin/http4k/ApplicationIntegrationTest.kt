@@ -30,7 +30,18 @@ internal class ApplicationIntegrationTest {
 
     @BeforeAll
     private fun startup() {
+        fun waitForServer() {
+            for (i in 1..10) {
+                if (client(Request(GET, "$baseUrl/ping")).status == OK) {
+                    return
+                }
+                Thread.sleep(100)
+            }
+            throw RuntimeException("Can't connect to server on $baseUrl:${server.port()}. Is it up?")
+        }
+
         server.start()
+        //waitForServer()
     }
 
     @AfterAll

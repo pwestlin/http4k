@@ -19,9 +19,10 @@ dependencies {
     def http4kVersion = '3.188.0'
     compile group: 'org.http4k', name: 'http4k-core', version: http4kVersion
     compile group: "org.http4k", name: "http4k-format-jackson", version: http4kVersion
+    compile group: "org.http4k", name: "http4k-client-okhttp", version: http4kVersion
+    compile group: "org.http4k", name: "http4k-server-netty", version: http4kVersion
 
     testCompile group: 'org.http4k', name: 'http4k-testing-approval', version: http4kVersion
-
 
     testCompile("org.junit.jupiter:junit-jupiter:5.5.2")
     testCompile group: 'org.assertj', name: 'assertj-core', version: '3.13.2'

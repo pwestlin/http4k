@@ -14,7 +14,7 @@ import org.http4k.lens.string
 import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
-import org.http4k.server.SunHttp
+import org.http4k.server.Netty
 import org.http4k.server.asServer
 
 // Inspiration: https://kotlinexpertise.com/kotlin-http4k/ and https://www.http4k.org/
@@ -74,7 +74,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
         } ?: Response(NOT_FOUND)
     }
 
-    fun putCarHandler(): HttpHandler = securityFilter.then {request ->
+    fun putCarHandler(): HttpHandler = securityFilter.then { request ->
         try {
             // TODO: Have repository.updateCar return Kotlin.Result?
             // MockK can't mock inline classes (yet) so I stick with an exception.
@@ -143,11 +143,10 @@ val server = requestTimeLogger  // log execution time of all requests
     .then(ServerFilters.CatchAll()) // to get stacktrace into the body of the response if an uncaught exception is thrown
     .then(ServerFilters.CatchLensFailure)   // translate failures in lenses
     .then(routing)  // create routes
-    .asServer(SunHttp(8080))
+    .asServer(Netty(8080))
 
 fun main() {
     log { "Server starting..." }
-
     log { "Server started on port ${server.start().port()}" }
 }
 
