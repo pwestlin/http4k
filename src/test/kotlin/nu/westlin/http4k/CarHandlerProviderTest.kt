@@ -46,7 +46,7 @@ internal class CarHandlerProviderTest {
 
     @Test
     fun `post a car`() {
-        val car = Car("LEN779", "Saab", "99", 1981)
+        val car = Car.random()
         every { repository.addCar(car) }.returns(Unit)
 
         val handler = provider.postCarHandler()
@@ -60,7 +60,7 @@ internal class CarHandlerProviderTest {
 
     @Test
     fun `post a car that already exist`() {
-        val car = Car("NAO124", "Saab", "99", 1981)
+        val car = Car.random()
         every { repository.addCar(car) }.throws(CarAlreadyExistException(car))
 
         val handler = provider.postCarHandler()
@@ -80,7 +80,7 @@ internal class CarHandlerProviderTest {
         val response = provider.getCarByRegNoHandler()(
             Request(
                 GET,
-                UriTemplate.from("cars/regNo/{regNo}")
+                UriTemplate.from("cars/{regNo}")
             ).with(regNoLens of car.regNo)
         )
         assertThat(response.status).isEqualTo(OK)
@@ -95,7 +95,7 @@ internal class CarHandlerProviderTest {
         val response = provider.getCarByRegNoHandler()(
             Request(
                 GET,
-                UriTemplate.from("cars/regNo/{regNo}")
+                UriTemplate.from("cars/{regNo}")
             ).with(regNoLens of regNo)
         )
         assertThat(response.status).isEqualTo(NOT_FOUND)

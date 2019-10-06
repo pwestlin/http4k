@@ -1,8 +1,7 @@
 package nu.westlin.http4k
 
 import org.http4k.core.*
-import org.http4k.core.Method.GET
-import org.http4k.core.Method.POST
+import org.http4k.core.Method.*
 import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.CONFLICT
 import org.http4k.core.Status.Companion.CREATED
@@ -14,14 +13,15 @@ import org.http4k.lens.Path
 import org.http4k.lens.string
 import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
-import org.http4k.routing.path
 import org.http4k.routing.routes
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
 // Inspiration: https://kotlinexpertise.com/kotlin-http4k/ and https://www.http4k.org/
 
-data class Car(val regNo: String, val brand: String, val model: String, val year: Int)
+data class Car(val regNo: String, val brand: String, val model: String, val year: Int) {
+    companion object
+}
 
 class CarRepository(carList: List<Car>) {
 
@@ -41,9 +41,17 @@ class CarRepository(carList: List<Car>) {
     fun getByRegNo(regNo: String): Car? {
         return cars.firstOrNull { it.regNo == regNo }
     }
+
+    fun updateCar(car: Car) {
+        cars.firstOrNull { it.regNo == car.regNo }?.let {
+            cars.remove(it)
+            cars.add(car)
+        } ?: throw CarDoesNotExistException(car)
+    }
 }
 
 class CarAlreadyExistException(car: Car) : RuntimeException("Car $car already exists")
+class CarDoesNotExistException(car: Car) : RuntimeException("Car $car does not exist")
 
 class CarHandlerProvider(private val repository: CarRepository) {
 
@@ -52,6 +60,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
     fun postCarHandler(): HttpHandler = securityFilter.then { request: Request ->
         try {
             // TODO petves: Have repository.addCar return Kotlin.Result?
+            // MockK can't mock inline classes (yet) so I stick with an exception.
             repository.addCar(carLens.extract(request))
             Response(CREATED)
         } catch (e: CarAlreadyExistException) {
@@ -60,9 +69,20 @@ class CarHandlerProvider(private val repository: CarRepository) {
     }
 
     fun getCarByRegNoHandler(): HttpHandler = { request: Request ->
-        repository.getByRegNo(request.path("regNo")!!)?.let {
+        repository.getByRegNo(regNoLens(request))?.let {
             Response(OK).with(carLens of it)
         } ?: Response(NOT_FOUND)
+    }
+
+    fun putCarHandler(): HttpHandler = securityFilter.then {request ->
+        try {
+            // TODO petves: Have repository.updateCar return Kotlin.Result?
+            // MockK can't mock inline classes (yet) so I stick with an exception.
+            repository.updateCar(carLens.extract(request))
+            Response(OK)
+        } catch (e: CarDoesNotExistException) {
+            Response(NOT_FOUND).body(e.localizedMessage)
+        }
     }
 
     companion object {
@@ -100,7 +120,8 @@ val routing: RoutingHttpHandler = routes(
     "/marco" bind GET to marcoPoloHandler,
     "/cars" bind GET to carHandlerProvider.allCarsHandler(),
     "/cars" bind POST to carHandlerProvider.postCarHandler(),
-    "/cars/regNo/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler()
+    "/cars/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler(),
+    "/cars/{regNo}" bind PUT to carHandlerProvider.putCarHandler()
 )
 
 val requestTimeLogger: Filter = Filter { next: HttpHandler ->
