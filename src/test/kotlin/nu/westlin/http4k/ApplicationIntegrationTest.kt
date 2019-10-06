@@ -16,7 +16,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-// TODO petves: Maybe rename this class to CarIntegrationTest?
+// TODO: Maybe rename this class to CarIntegrationTest?
 @Suppress("unused")
 internal class ApplicationIntegrationTest {
 

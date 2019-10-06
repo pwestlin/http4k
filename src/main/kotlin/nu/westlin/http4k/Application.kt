@@ -59,7 +59,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
 
     fun postCarHandler(): HttpHandler = securityFilter.then { request: Request ->
         try {
-            // TODO petves: Have repository.addCar return Kotlin.Result?
+            // TODO: Have repository.addCar return Kotlin.Result?
             // MockK can't mock inline classes (yet) so I stick with an exception.
             repository.addCar(carLens.extract(request))
             Response(CREATED)
@@ -76,7 +76,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
 
     fun putCarHandler(): HttpHandler = securityFilter.then {request ->
         try {
-            // TODO petves: Have repository.updateCar return Kotlin.Result?
+            // TODO: Have repository.updateCar return Kotlin.Result?
             // MockK can't mock inline classes (yet) so I stick with an exception.
             repository.updateCar(carLens.extract(request))
             Response(OK)
@@ -108,7 +108,7 @@ val initialCarList = listOf(
     Car("NMO996", "Volvo", "142", 1972)
 )
 val carHandlerProvider = CarHandlerProvider(
-    // TODO petves: Yes I know it is ugly to that the application contains data by default at starttime
+    // TODO: Yes I know it is ugly to that the application contains data by default at starttime
     //  but it is an example application, ok? :)
     CarRepository(initialCarList)
 )
