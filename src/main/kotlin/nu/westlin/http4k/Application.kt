@@ -119,10 +119,12 @@ private val securityFilter: Filter = ServerFilters.BasicAuth("realm", "admin", "
 val routing: RoutingHttpHandler = routes(
     "/ping" bind GET to pingPongHandler,
     "/marco" bind GET to marcoPoloHandler,
-    "/cars" bind GET to carHandlerProvider.allCarsHandler(),
-    "/cars" bind POST to carHandlerProvider.postCarHandler(),
-    "/cars/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler(),
-    "/cars/{regNo}" bind PUT to carHandlerProvider.putCarHandler(),
+    "/cars" bind routes(
+        "/" bind GET to carHandlerProvider.allCarsHandler(),
+        "/" bind POST to carHandlerProvider.postCarHandler(),
+        "/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler(),
+        "/{regNo}" bind PUT to carHandlerProvider.putCarHandler()
+    ),
     "/error" bind GET to internalServerErrorHandler
 )
 
