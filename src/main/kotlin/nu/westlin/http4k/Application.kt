@@ -8,7 +8,6 @@ import org.http4k.core.Status.Companion.CREATED
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.filter.ServerFilters
-import org.http4k.filter.ServerFilters.CatchLensFailure
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.Path
 import org.http4k.lens.string
@@ -94,6 +93,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
 }
 
 val pingPongHandler: HttpHandler = { Response(OK).body("Pong!") }
+val internalServerErrorHandler: HttpHandler = { throw RuntimeException("I am an exception endpoint") }
 
 val marcoPoloHandler: HttpHandler = { request: Request ->
     if (request.query("name") == "Marco") {
@@ -122,7 +122,8 @@ val routing: RoutingHttpHandler = routes(
     "/cars" bind GET to carHandlerProvider.allCarsHandler(),
     "/cars" bind POST to carHandlerProvider.postCarHandler(),
     "/cars/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler(),
-    "/cars/{regNo}" bind PUT to carHandlerProvider.putCarHandler()
+    "/cars/{regNo}" bind PUT to carHandlerProvider.putCarHandler(),
+    "/error" bind GET to internalServerErrorHandler
 )
 
 val requestTimeLogger: Filter = Filter { next: HttpHandler ->
@@ -136,9 +137,10 @@ val requestTimeLogger: Filter = Filter { next: HttpHandler ->
 }
 
 
-val server = requestTimeLogger
-    .then(CatchLensFailure)
-    .then(routing)
+val server = requestTimeLogger  // log execution time of all requests
+    .then(ServerFilters.CatchAll()) // to get stacktrace into the body of the response if an uncaught exception is thrown
+    .then(ServerFilters.CatchLensFailure)   // translate failures in lenses
+    .then(routing)  // create routes
     .asServer(SunHttp(8080))
 
 fun main() {
