@@ -11,7 +11,6 @@ import org.http4k.filter.ServerFilters
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.Path
 import org.http4k.lens.string
-import org.http4k.routing.RoutingHttpHandler
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.Netty
@@ -57,6 +56,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
 
     fun allCarsHandler(): HttpHandler = { Response(OK).with(carListLens of repository.all()) }
 
+    // TODO: Should securityFilter be applied here or when I create the routes?
     fun postCarHandler(): HttpHandler = securityFilter.then { request: Request ->
         try {
             // TODO: Have repository.addCar return Kotlin.Result?
@@ -74,6 +74,7 @@ class CarHandlerProvider(private val repository: CarRepository) {
         } ?: Response(NOT_FOUND)
     }
 
+    // TODO: Should securityFilter be applied here or when I create the routes?
     fun putCarHandler(): HttpHandler = securityFilter.then { request ->
         try {
             // TODO: Have repository.updateCar return Kotlin.Result?
@@ -116,6 +117,27 @@ val carHandlerProvider = CarHandlerProvider(
 
 private val securityFilter: Filter = ServerFilters.BasicAuth("realm", "admin", "password")
 
+class Routes(
+    pingPongHandler: HttpHandler,
+    marcoPoloHandler: HttpHandler,
+    carHandlerProvider: CarHandlerProvider,
+    internalServerErrorHandler: HttpHandler
+) {
+    val routes =
+        routes(
+            "/ping" bind GET to pingPongHandler,
+            "/marco" bind GET to marcoPoloHandler,
+            "/cars" bind routes(
+                "/" bind GET to carHandlerProvider.allCarsHandler(),
+                "/" bind POST to carHandlerProvider.postCarHandler(),
+                "/{regNo}" bind GET to carHandlerProvider.getCarByRegNoHandler(),
+                "/{regNo}" bind PUT to carHandlerProvider.putCarHandler()
+            ),
+            "/error" bind GET to internalServerErrorHandler
+        )
+}
+
+/*
 val routing: RoutingHttpHandler = routes(
     "/ping" bind GET to pingPongHandler,
     "/marco" bind GET to marcoPoloHandler,
@@ -127,6 +149,7 @@ val routing: RoutingHttpHandler = routes(
     ),
     "/error" bind GET to internalServerErrorHandler
 )
+*/
 
 val requestTimeLogger: Filter = Filter { next: HttpHandler ->
     { request: Request ->
@@ -142,7 +165,15 @@ val requestTimeLogger: Filter = Filter { next: HttpHandler ->
 val server = requestTimeLogger  // log execution time of all requests
     .then(ServerFilters.CatchAll()) // to get stacktrace into the body of the response if an uncaught exception is thrown
     .then(ServerFilters.CatchLensFailure)   // translate failures in lenses
-    .then(routing)  // create routes
+    //.then(routing)  // create routes
+    .then(
+        Routes(
+            pingPongHandler,
+            marcoPoloHandler,
+            carHandlerProvider,
+            internalServerErrorHandler
+        ).routes
+    )  // create routes
     .asServer(Netty(8080))
 
 fun main() {
