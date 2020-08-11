@@ -4,7 +4,7 @@ import nu.westlin.http4k.CarHandlerProvider.Companion.carLens
 import nu.westlin.http4k.CarHandlerProvider.Companion.carListLens
 import nu.westlin.http4k.CarHandlerProvider.Companion.regNoLens
 import org.assertj.core.api.Assertions.assertThat
-import org.http4k.client.JavaHttpClient
+import org.http4k.client.Java8HttpClient
 import org.http4k.core.*
 import org.http4k.core.Method.*
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 @Suppress("unused")
 internal class ApplicationIntegrationTest {
 
-    private val client: HttpHandler = JavaHttpClient()
+    private val client: HttpHandler = Java8HttpClient()
 
     private val securityFilter: Filter = ClientFilters.BasicAuth("admin", "password")
 

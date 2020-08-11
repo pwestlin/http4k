@@ -47,6 +47,6 @@ fun listAllCars(client: HttpHandler) {
 private fun ping(client: HttpHandler) {
     val request = Request(GET, "http://localhost:8080/ping")
     val response = client(request)
-    log { "response = ${response.status}" }
-    log { "response = $response" }
+    log { "response.status = ${response.status}" }
+    log { "response.body = ${response.body}" }
 }
