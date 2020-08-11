@@ -17,7 +17,7 @@ internal class CarRepositoryTest {
 
     @BeforeEach
     private fun init() {
-        repository = CarRepository(cars)
+        repository = CarRepository().also { repo -> cars.forEach { repo.addCar(it) } }
     }
 
     @Test

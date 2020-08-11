@@ -22,9 +22,9 @@ data class Car(val regNo: String, val brand: String, val model: String, val year
     companion object
 }
 
-class CarRepository(carList: List<Car>) {
+class CarRepository {
 
-    private val cars = carList.toMutableList()
+    private val cars = mutableListOf<Car>()
 
     fun all(): List<Car> {
         return cars
@@ -110,9 +110,11 @@ val initialCarList = listOf(
     Car("NMO996", "Volvo", "142", 1972)
 )
 val carHandlerProvider = CarHandlerProvider(
-    // TODO: Yes I know it is ugly to that the application contains data by default at starttime
+    // TODO: Yes I know it is ugly that the application contains data by default at starttime
     //  but it is an example application, ok? :)
-    CarRepository(initialCarList)
+    CarRepository().also { repo ->
+        initialCarList.forEach { repo.addCar(it) }
+    }
 )
 
 private val securityFilter: Filter = ServerFilters.BasicAuth("realm", "admin", "password")
